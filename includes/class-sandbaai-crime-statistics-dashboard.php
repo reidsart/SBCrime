@@ -13,21 +13,26 @@ class Sandbaai_Crime_Statistics_Dashboard {
     /**
      * Add the statistics page to the admin menu.
      */
-public function add_statistics_page() {
-    add_submenu_page(
-        'sandbaai-crime-tracker', // Parent menu slug
-        'Crime Statistics',       // Page title
-        'Crime Statistics',       // Menu title
-        'manage_options',         // Capability
-        'sandbaai-crime-statistics', // Menu slug
-        [$this, 'render_statistics_page'] // Callback function
-    );
-}
+    public function add_statistics_page() {
+        add_submenu_page(
+            'sandbaai-crime-tracker', // Parent menu slug
+            'Crime Statistics',       // Page title
+            'Crime Statistics',       // Menu title
+            'manage_options',         // Capability
+            'sandbaai-crime-statistics', // Menu slug
+            [$this, 'render_statistics_page'] // Callback function
+        );
+    }
 
     /**
      * Render the statistics page.
      */
     public function render_statistics_page() {
+        // Check user permission
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+
         ?>
         <div class="wrap sandbaai-crime-statistics">
             <h1>Crime Statistics Dashboard</h1>
