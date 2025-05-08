@@ -19,6 +19,7 @@ register_activation_hook(__FILE__, 'sandbaai_crime_tracker_activate');
 register_deactivation_hook(__FILE__, 'sandbaai_crime_tracker_deactivate');
 
 require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-crime-reporting-form.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-crime-statistics-dashboard.php';
 
 function sandbaai_crime_tracker_activate() {
     // Code to run on plugin activation.
