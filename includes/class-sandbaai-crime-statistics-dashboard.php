@@ -13,66 +13,69 @@ class Sandbaai_Crime_Statistics_Dashboard {
     /**
      * Add the statistics page to the admin menu.
      */
-public function add_statistics_page() {
-    add_submenu_page(
-        'sandbaai-crime-tracker', // Parent menu slug
-        'Crime Statistics',       // Page title
-        'Crime Statistics',       // Menu title
-        'manage_options',         // Capability
-        'sandbaai-crime-tracker-crime-statistics', // Menu slug
-        [$this, 'render_statistics_page'] // Callback function
-    );
-}
+    public function add_statistics_page() {
+        add_submenu_page(
+            'sandbaai-crime-tracker',
+            'Crime Statistics',
+            'Crime Statistics',
+            'manage_options',
+            'sandbaai-crime-statistics',
+            [$this, 'render_statistics_page']
+        );
+    }
 
     /**
      * Render the statistics page.
      */
     public function render_statistics_page() {
-        // Check user permission
-        if (!current_user_can('manage_options')) {
-            wp_die(__('You do not have sufficient permissions to access this page.'));
+        global $wpdb;
+
+        // Fetch crime reports data
+        $crime_reports_table = $wpdb->prefix . 'posts';
+        $meta_table = $wpdb->prefix . 'postmeta';
+
+        // Query for crime reports with necessary meta data
+        $crime_reports_query = "
+            SELECT p.ID, p.post_title, p.post_date, 
+                   meta_location.meta_value AS location, 
+                   meta_category.meta_value AS category, 
+                   meta_date_time.meta_value AS date_time
+            FROM $crime_reports_table p
+            LEFT JOIN $meta_table meta_location ON (p.ID = meta_location.post_id AND meta_location.meta_key = 'location')
+            LEFT JOIN $meta_table meta_category ON (p.ID = meta_category.post_id AND meta_category.meta_key = 'category')
+            LEFT JOIN $meta_table meta_date_time ON (p.ID = meta_date_time.post_id AND meta_date_time.meta_key = 'date_time')
+            WHERE p.post_type = 'crime_report'
+            AND p.post_status IN ('pending', 'publish')
+            ORDER BY p.post_date DESC
+            LIMIT 10
+        ";
+
+        $crime_reports = $wpdb->get_results($crime_reports_query);
+
+        // Group crime data by category for charting
+        $categories_data = [];
+        foreach ($crime_reports as $report) {
+            $category = $report->category;
+            if (!isset($categories_data[$category])) {
+                $categories_data[$category] = 0;
+            }
+            $categories_data[$category]++;
         }
 
         ?>
+
         <div class="wrap sandbaai-crime-statistics">
             <h1>Crime Statistics Dashboard</h1>
-            
-            <form id="crime-stats-filters">
-                <label for="filter-month">Month:</label>
-                <select id="filter-month" name="filter-month">
-                    <option value="all">All</option>
-                    <?php for ($m = 1; $m <= 12; $m++): ?>
-                        <option value="<?php echo $m; ?>"><?php echo date('F', mktime(0, 0, 0, $m, 1)); ?></option>
-                    <?php endfor; ?>
-                </select>
 
-                <label for="filter-year">Year:</label>
-                <select id="filter-year" name="filter-year">
-                    <option value="all">All</option>
-                    <?php for ($y = date('Y'); $y >= 2000; $y--): ?>
-                        <option value="<?php echo $y; ?>"><?php echo $y; ?></option>
-                    <?php endfor; ?>
-                </select>
-
-                <label for="filter-category">Crime Category:</label>
-                <select id="filter-category" name="filter-category">
-                    <option value="all">All</option>
-                    <option value="theft">Theft</option>
-                    <option value="vandalism">Vandalism</option>
-                    <option value="assault">Assault</option>
-                    <option value="other">Other</option>
-                </select>
-
-                <button type="button" id="filter-apply">Apply Filters</button>
-            </form>
-
+            <!-- Visualization Section -->
             <div id="crime-stats-visualizations">
                 <canvas id="crime-stats-graph" width="400" height="200"></canvas>
                 <canvas id="crime-stats-pie" width="400" height="200"></canvas>
             </div>
 
+            <!-- Recent Reports Section -->
             <div id="crime-stats-list">
-                <h2>Crime Reports</h2>
+                <h2>Recent Crime Reports</h2>
                 <table class="widefat">
                     <thead>
                         <tr>
@@ -83,100 +86,77 @@ public function add_statistics_page() {
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Data will be populated via JavaScript -->
+                        <?php if (!empty($crime_reports)): ?>
+                            <?php foreach ($crime_reports as $report): ?>
+                                <tr>
+                                    <td><?php echo esc_html($report->post_title); ?></td>
+                                    <td><?php echo esc_html($report->category); ?></td>
+                                    <td><?php echo esc_html($report->date_time); ?></td>
+                                    <td><?php echo esc_html($report->location); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="4">No crime reports available.</td></tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <style>
-            /* Ensure all styles override Astra theme */
-            .sandbaai-crime-statistics #crime-stats-filters label {
-                font-weight: bold !important;
-                margin-right: 10px !important;
-            }
-
-            .sandbaai-crime-statistics #crime-stats-filters select,
-            .sandbaai-crime-statistics #crime-stats-filters button {
-                margin-right: 20px !important;
-            }
-
-            .sandbaai-crime-statistics #crime-stats-visualizations {
-                margin-top: 20px !important;
-            }
-
-            .sandbaai-crime-statistics table.widefat {
-                margin-top: 20px !important;
-            }
-        </style>
-
+        <!-- Chart.js Integration -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const ctxGraph = document.getElementById('crime-stats-graph').getContext('2d');
                 const ctxPie = document.getElementById('crime-stats-pie').getContext('2d');
 
-                // Example data for testing
-                const exampleData = {
-                    graph: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        data: [5, 10, 3, 8, 6, 2, 4]
-                    },
-                    pie: {
-                        labels: ['Theft', 'Vandalism', 'Assault', 'Other'],
-                        data: [20, 15, 10, 5]
-                    }
-                };
+                // Chart Data
+                const crimeData = <?php echo json_encode($categories_data); ?>;
+                const labels = Object.keys(crimeData);
+                const dataCounts = Object.values(crimeData);
 
-                // Bar graph
+                // Bar Chart
                 new Chart(ctxGraph, {
                     type: 'bar',
                     data: {
-                        labels: exampleData.graph.labels,
+                        labels: labels,
                         datasets: [{
-                            label: 'Crimes by Day',
-                            data: exampleData.graph.data,
+                            label: 'Number of Crimes',
+                            data: dataCounts,
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
+                            borderWidth: 1,
+                        }],
                     },
                     options: {
-                        responsive: true
-                    }
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                            },
+                        },
+                    },
                 });
 
-                // Pie chart
+                // Pie Chart
                 new Chart(ctxPie, {
                     type: 'pie',
                     data: {
-                        labels: exampleData.pie.labels,
+                        labels: labels,
                         datasets: [{
-                            data: exampleData.pie.data,
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
-                        }]
+                            data: dataCounts,
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                        }],
                     },
                     options: {
-                        responsive: true
-                    }
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                            },
+                        },
+                    },
                 });
-
-                // Example: Populate list
-                const tableBody = document.querySelector('#crime-stats-list table tbody');
-                tableBody.innerHTML = `
-                    <tr>
-                        <td>Burglary in Zone A</td>
-                        <td>Theft</td>
-                        <td>2025-05-07</td>
-                        <td>Zone A</td>
-                    </tr>
-                    <tr>
-                        <td>Vandalism at Park</td>
-                        <td>Vandalism</td>
-                        <td>2025-05-06</td>
-                        <td>Sandbaai Park</td>
-                    </tr>
-                `;
             });
         </script>
         <?php
