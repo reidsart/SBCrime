@@ -19,7 +19,7 @@ public function add_statistics_page() {
         'Crime Statistics',       // Page title
         'Crime Statistics',       // Menu title
         'manage_options',         // Capability
-        'sandbaai-crime-tracker-sandbaai-crime-statistics', // Menu slug
+        'sandbaai-crime-statistics', // Menu slug
         [$this, 'render_statistics_page'] // Callback function
     );
 }
