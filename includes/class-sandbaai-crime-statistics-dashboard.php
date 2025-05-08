@@ -6,8 +6,27 @@
 class Sandbaai_Crime_Statistics_Dashboard {
 
     public function __construct() {
+<<<<<<< HEAD
         // Remove admin menu registration to avoid duplication.
         // The main plugin file will handle adding the menu item.
+=======
+        // Add dashboard page to admin menu
+        add_action('admin_menu', [$this, 'add_statistics_page']);
+    }
+
+    /**
+     * Add the statistics page to the admin menu.
+     */
+    public function add_statistics_page() {
+        add_submenu_page(
+            'sandbaai-crime-tracker',
+            'Crime Statistics',
+            'Crime Statistics',
+            'manage_options',
+            'sandbaai-crime-statistics',
+            [$this, 'render_statistics_page']
+        );
+>>>>>>> 85922b066834d06060e1d3ced422c84a0b30b700
     }
 
     /**
@@ -162,4 +181,10 @@ class Sandbaai_Crime_Statistics_Dashboard {
         </script>
         <?php
     }
+<<<<<<< HEAD
 }
+=======
+}
+
+new Sandbaai_Crime_Statistics_Dashboard();
+>>>>>>> 85922b066834d06060e1d3ced422c84a0b30b700

@@ -187,6 +187,9 @@ function sandbaai_crime_statistics_page() {
 function sandbaai_crime_tracker_settings_page() {
     echo '<div class="wrap"><h1>Settings</h1><p>Configure the plugin settings here.</p></div>';
 }
+<<<<<<< HEAD
 
 // Initialize the Crime Reporting Form
 new Sandbaai_Crime_Reporting_Form();
+=======
+>>>>>>> 85922b066834d06060e1d3ced422c84a0b30b700
