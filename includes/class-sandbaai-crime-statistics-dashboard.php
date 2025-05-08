@@ -13,16 +13,16 @@ class Sandbaai_Crime_Statistics_Dashboard {
     /**
      * Add the statistics page to the admin menu.
      */
-    public function add_statistics_page() {
-        add_submenu_page(
-            'sandbaai-crime-tracker',
-            'Crime Statistics',
-            'Crime Statistics',
-            'manage_options',
-            'sandbaai-crime-statistics',
-            [$this, 'render_statistics_page']
-        );
-    }
+public function add_statistics_page() {
+    add_submenu_page(
+        'sandbaai-crime-tracker', // Parent menu slug
+        'Crime Statistics',       // Page title
+        'Crime Statistics',       // Menu title
+        'manage_options',         // Capability
+        'sandbaai-crime-tracker-sandbaai-crime-statistics', // Menu slug
+        [$this, 'render_statistics_page'] // Callback function
+    );
+}
 
     /**
      * Render the statistics page.
