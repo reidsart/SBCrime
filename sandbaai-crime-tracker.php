@@ -69,10 +69,10 @@ function sandbaai_crime_tracker_create_tables() {
     dbDelta($sql);
 }
 
-// Register custom post types
-add_action('init', 'sandbaai_crime_tracker_register_post_types');
+// Register custom post types and taxonomies
+add_action('init', 'sandbaai_crime_tracker_register_custom_types');
 
-function sandbaai_crime_tracker_register_post_types() {
+function sandbaai_crime_tracker_register_custom_types() {
     // Register "Crime Reports" post type
     register_post_type('crime_report', [
         'labels' => [
@@ -90,31 +90,27 @@ function sandbaai_crime_tracker_register_post_types() {
         ],
         'public' => false,
         'show_ui' => true,
-        'show_in_menu' => false, // Remove from main menu
         'supports' => ['title', 'editor', 'custom-fields', 'excerpt', 'thumbnail'],
         'capability_type' => 'post',
+        'taxonomies' => ['post_tag']
     ]);
 
-    // Register "Security Groups" post type
-    register_post_type('security_group', [
+    // Register "Crime Categories" taxonomy
+    register_taxonomy('crime_category', 'crime_report', [
         'labels' => [
-            'name' => 'Security Groups',
-            'singular_name' => 'Security Group',
-            'add_new' => 'Add New Group',
-            'add_new_item' => 'Add New Security Group',
-            'edit_item' => 'Edit Security Group',
-            'new_item' => 'New Security Group',
-            'view_item' => 'View Security Group',
-            'search_items' => 'Search Security Groups',
-            'not_found' => 'No security groups found',
-            'not_found_in_trash' => 'No security groups found in trash',
-            'all_items' => 'All Security Groups',
+            'name' => 'Crime Categories',
+            'singular_name' => 'Crime Category',
+            'search_items' => 'Search Crime Categories',
+            'all_items' => 'All Crime Categories',
+            'edit_item' => 'Edit Crime Category',
+            'update_item' => 'Update Crime Category',
+            'add_new_item' => 'Add New Crime Category',
+            'new_item_name' => 'New Crime Category Name',
+            'menu_name' => 'Crime Categories',
         ],
-        'public' => false,
+        'hierarchical' => true,
         'show_ui' => true,
-        'show_in_menu' => false, // Remove from main menu
-        'supports' => ['title', 'editor', 'custom-fields'],
-        'capability_type' => 'post',
+        'show_admin_column' => true,
     ]);
 }
 
@@ -160,10 +156,19 @@ function sandbaai_crime_tracker_add_admin_menu() {
         'sandbaai-crime-statistics',
         'sandbaai_crime_statistics_page'
     );
+
+    // Submenu for "Crime Categories"
+    add_submenu_page(
+        'sandbaai-crime-tracker',
+        'Crime Categories',
+        'Crime Categories',
+        'manage_options',
+        'edit-tags.php?taxonomy=crime_category&post_type=crime_report'
+    );
 }
 
 function sandbaai_crime_tracker_dashboard_page() {
-    echo '<div class="wrap"><h1>Sandbaai Crime Tracker Dashboard</h1><p>Welcome to the Sandbaai Crime Tracker plugin. Use the submenus to manage reports, security groups, and view statistics.</p></div>';
+    echo '<div class="wrap"><h1>Sandbaai Crime Tracker Dashboard</h1><p>Welcome to the Sandbaai Crime Tracker plugin. Use the submenus to manage reports, categories, tags, security groups, and view statistics.</p></div>';
 }
 
 function sandbaai_crime_statistics_page() {
@@ -171,44 +176,22 @@ function sandbaai_crime_statistics_page() {
     $statistics_dashboard->render_statistics_page();
 }
 
-// Add custom columns for Crime Reports
+// Modify admin columns for Crime Reports
 add_filter('manage_crime_report_posts_columns', 'add_crime_report_columns');
 function add_crime_report_columns($columns) {
-    $columns['category'] = 'Category';
-    $columns['tags'] = 'Tags';
+    $columns['submitted_by'] = 'Submitted By';
+    $columns['date_time'] = 'Reported Date';
     return $columns;
 }
 
-// Populate custom columns for Crime Reports
 add_action('manage_crime_report_posts_custom_column', 'populate_crime_report_columns', 10, 2);
 function populate_crime_report_columns($column, $post_id) {
-    if ($column == 'category') {
-        $categories = get_the_terms($post_id, 'category');
-        echo $categories ? esc_html(join(', ', wp_list_pluck($categories, 'name'))) : '—';
+    if ($column == 'submitted_by') {
+        $user = get_post_meta($post_id, '_submitted_by', true);
+        echo $user ? esc_html($user) : '—';
     }
-    if ($column == 'tags') {
-        $tags = get_the_terms($post_id, 'post_tag');
-        echo $tags ? esc_html(join(', ', wp_list_pluck($tags, 'name'))) : '—';
-    }
-}
-
-// Add custom columns for Security Groups
-add_filter('manage_security_group_posts_columns', 'add_security_group_columns');
-function add_security_group_columns($columns) {
-    $columns['category'] = 'Category';
-    $columns['tags'] = 'Tags';
-    return $columns;
-}
-
-// Populate custom columns for Security Groups
-add_action('manage_security_group_posts_custom_column', 'populate_security_group_columns', 10, 2);
-function populate_security_group_columns($column, $post_id) {
-    if ($column == 'category') {
-        $categories = get_the_terms($post_id, 'category');
-        echo $categories ? esc_html(join(', ', wp_list_pluck($categories, 'name'))) : '—';
-    }
-    if ($column == 'tags') {
-        $tags = get_the_terms($post_id, 'post_tag');
-        echo $tags ? esc_html(join(', ', wp_list_pluck($tags, 'name'))) : '—';
+    if ($column == 'date_time') {
+        $date = get_post_meta($post_id, 'date_time', true);
+        echo $date ? esc_html($date) : '—';
     }
 }
