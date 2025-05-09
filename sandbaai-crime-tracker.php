@@ -106,7 +106,7 @@ function sandbaai_crime_tracker_register_post_types() {
     ]);
 }
 
-// Add admin menu.
+// Add admin menu
 add_action('admin_menu', 'sandbaai_crime_tracker_add_admin_menu');
 
 function sandbaai_crime_tracker_add_admin_menu() {
@@ -116,7 +116,7 @@ function sandbaai_crime_tracker_add_admin_menu() {
         'Crime Tracker',
         'manage_options',
         'sandbaai-crime-tracker',
-        'sandbaai_crime_tracker_dashboard_page', // Callback for the main menu
+        'sandbaai_crime_tracker_dashboard_page',
         'dashicons-shield',
         6
     );
@@ -124,31 +124,11 @@ function sandbaai_crime_tracker_add_admin_menu() {
     // Submenu for "Manage Crime Reports"
     add_submenu_page(
         'sandbaai-crime-tracker',
-        'Crime Reports',
+        'Manage Crime Reports',
         'Manage Crime Reports',
         'manage_options',
         'sandbaai-crime-tracker-crime-reports',
         'sandbaai_crime_tracker_crime_reports_page'
-    );
-
-    // Submenu for "Manage Security Groups"
-    add_submenu_page(
-        'sandbaai-crime-tracker',
-        'Security Groups',
-        'Manage Security Groups',
-        'manage_options',
-        'sandbaai-crime-tracker-security-groups',
-        'sandbaai_crime_tracker_security_groups_page'
-    );
-
-    // Submenu for "Crime Statistics" (only added once)
-    add_submenu_page(
-        'sandbaai-crime-tracker',
-        'Crime Statistics',
-        'Crime Statistics',
-        'manage_options',
-        'sandbaai-crime-statistics',
-        'sandbaai_crime_statistics_page'
     );
 
     // Submenu for "Settings"

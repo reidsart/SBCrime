@@ -6,17 +6,11 @@
 class Sandbaai_Crime_Statistics_Dashboard {
 
     public function __construct() {
-<<<<<<< HEAD
-        // Remove admin menu registration to avoid duplication.
-        // The main plugin file will handle adding the menu item.
-=======
-        // Add dashboard page to admin menu
         add_action('admin_menu', [$this, 'add_statistics_page']);
+        add_action('wp_ajax_get_filtered_crime_data', [$this, 'get_filtered_crime_data']);
     }
 
-    /**
-     * Add the statistics page to the admin menu.
-     */
+    /** Add the statistics page to the admin menu. */
     public function add_statistics_page() {
         add_submenu_page(
             'sandbaai-crime-tracker',
@@ -26,12 +20,9 @@ class Sandbaai_Crime_Statistics_Dashboard {
             'sandbaai-crime-statistics',
             [$this, 'render_statistics_page']
         );
->>>>>>> 85922b066834d06060e1d3ced422c84a0b30b700
     }
 
-    /**
-     * Render the statistics page.
-     */
+    /** Render the statistics page. */
     public function render_statistics_page() {
         ?>
         <div class="wrap sandbaai-crime-statistics">
@@ -90,7 +81,6 @@ class Sandbaai_Crime_Statistics_Dashboard {
         </div>
 
         <style>
-            /* Ensure all styles override Astra theme */
             .sandbaai-crime-statistics #crime-stats-filters label {
                 font-weight: bold !important;
                 margin-right: 10px !important;
@@ -113,78 +103,113 @@ class Sandbaai_Crime_Statistics_Dashboard {
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const ctxGraph = document.getElementById('crime-stats-graph').getContext('2d');
-                const ctxPie = document.getElementById('crime-stats-pie').getContext('2d');
+                const filters = document.getElementById('crime-stats-filters');
+                const graphCanvas = document.getElementById('crime-stats-graph').getContext('2d');
+                const pieCanvas = document.getElementById('crime-stats-pie').getContext('2d');
+                const tableBody = document.querySelector('#crime-stats-list table tbody');
 
-                // Example data for testing
-                const exampleData = {
-                    graph: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        data: [5, 10, 3, 8, 6, 2, 4]
-                    },
-                    pie: {
-                        labels: ['Theft', 'Vandalism', 'Assault', 'Other'],
-                        data: [20, 15, 10, 5]
-                    }
+                const fetchCrimeData = () => {
+                    const formData = new FormData(filters);
+                    fetch(ajaxurl + '?action=get_filtered_crime_data', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update charts
+                        new Chart(graphCanvas, {
+                            type: 'bar',
+                            data: {
+                                labels: data.graph.labels,
+                                datasets: [{
+                                    label: 'Crimes by Day',
+                                    data: data.graph.values,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true }
+                        });
+
+                        new Chart(pieCanvas, {
+                            type: 'pie',
+                            data: {
+                                labels: data.pie.labels,
+                                datasets: [{
+                                    data: data.pie.values,
+                                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                                }]
+                            },
+                            options: { responsive: true }
+                        });
+
+                        // Update table
+                        tableBody.innerHTML = data.reports.map(report => `
+                            <tr>
+                                <td>${report.title}</td>
+                                <td>${report.category}</td>
+                                <td>${report.date}</td>
+                                <td>${report.location}</td>
+                            </tr>
+                        `).join('');
+                    });
                 };
 
-                // Bar graph
-                new Chart(ctxGraph, {
-                    type: 'bar',
-                    data: {
-                        labels: exampleData.graph.labels,
-                        datasets: [{
-                            label: 'Crimes by Day',
-                            data: exampleData.graph.data,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true
-                    }
-                });
-
-                // Pie chart
-                new Chart(ctxPie, {
-                    type: 'pie',
-                    data: {
-                        labels: exampleData.pie.labels,
-                        datasets: [{
-                            data: exampleData.pie.data,
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
-                        }]
-                    },
-                    options: {
-                        responsive: true
-                    }
-                });
-
-                // Example: Populate list
-                const tableBody = document.querySelector('#crime-stats-list table tbody');
-                tableBody.innerHTML = `
-                    <tr>
-                        <td>Burglary in Zone A</td>
-                        <td>Theft</td>
-                        <td>2025-05-07</td>
-                        <td>Zone A</td>
-                    </tr>
-                    <tr>
-                        <td>Vandalism at Park</td>
-                        <td>Vandalism</td>
-                        <td>2025-05-06</td>
-                        <td>Sandbaai Park</td>
-                    </tr>
-                `;
+                document.getElementById('filter-apply').addEventListener('click', fetchCrimeData);
+                fetchCrimeData(); // Initial load
             });
         </script>
         <?php
     }
-<<<<<<< HEAD
-}
-=======
+
+    /** Fetch filtered crime data */
+    public function get_filtered_crime_data() {
+        global $wpdb;
+
+        $month = isset($_POST['filter-month']) ? sanitize_text_field($_POST['filter-month']) : 'all';
+        $year = isset($_POST['filter-year']) ? sanitize_text_field($_POST['filter-year']) : 'all';
+        $category = isset($_POST['filter-category']) ? sanitize_text_field($_POST['filter-category']) : 'all';
+
+        $query = "SELECT * FROM {$wpdb->prefix}crime_reports WHERE 1=1";
+        $params = [];
+
+        if ($month !== 'all') {
+            $query .= " AND MONTH(date_time) = %d";
+            $params[] = $month;
+        }
+
+        if ($year !== 'all') {
+            $query .= " AND YEAR(date_time) = %d";
+            $params[] = $year;
+        }
+
+        if ($category !== 'all') {
+            $query .= " AND category = %s";
+            $params[] = $category;
+        }
+
+        $results = $wpdb->get_results($wpdb->prepare($query, $params));
+
+        wp_send_json([
+            'graph' => [
+                'labels' => array_column($results, 'date_time'),
+                'values' => array_column($results, 'id')
+            ],
+            'pie' => [
+                'labels' => array_unique(array_column($results, 'category')),
+                'values' => array_count_values(array_column($results, 'category'))
+            ],
+            'reports' => array_map(function ($row) {
+                return [
+                    'title' => $row->title,
+                    'category' => $row->category,
+                    'date' => $row->date_time,
+                    'location' => $row->location
+                ];
+            }, $results)
+        ]);
+    }
 }
 
 new Sandbaai_Crime_Statistics_Dashboard();
->>>>>>> 85922b066834d06060e1d3ced422c84a0b30b700
