@@ -223,6 +223,9 @@ function populate_crime_report_columns($column, $post_id) {
 // Enqueue scripts and styles
 add_action('admin_enqueue_scripts', 'sandbaai_crime_tracker_enqueue_scripts');
 function sandbaai_crime_tracker_enqueue_scripts($hook) {
+    // Log the current admin page hook
+    error_log('Current admin page hook: ' . $hook);
+
     // Only load on the Crime Statistics page
     if ($hook !== 'crime-tracker_page_sandbaai-crime-statistics') {
         return;
@@ -231,20 +234,24 @@ function sandbaai_crime_tracker_enqueue_scripts($hook) {
     // Enqueue Chart.js library
     wp_enqueue_script(
         'chart-js',
-        'https://cdn.jsdelivr.net/npm/chart.js',
+        'https://cdn.jsdelivr.net/npm/chart.js', // Official CDN for Chart.js
         [],
         null,
         true
     );
 
-    // Enqueue custom script
+    // Use the exact URL of the working JavaScript file
+    $script_url = 'https://scvid.co.za/wp-content/plugins/SBCrime/assets/js/crime-statistics.js';
     wp_enqueue_script(
         'crime-statistics',
-        plugin_dir_url(__FILE__) . 'assets/js/crime-statistics.js',
-        ['chart-js'],
+        $script_url,
+        ['chart-js'], // Chart.js is a dependency
         null,
         true
     );
+
+    // Log the resolved path for debugging
+    error_log('Resolved Crime Statistics JS Path: ' . $script_url);
 
     // Pass AJAX URL and nonce to JavaScript
     wp_localize_script('crime-statistics', 'crimeStatistics', [
