@@ -21,6 +21,8 @@ register_deactivation_hook(__FILE__, 'sandbaai_crime_tracker_deactivate');
 // Include necessary files
 require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-crime-reporting-form.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-crime-statistics-dashboard.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-manage-crime-reports.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-manage-security-groups.php';
 
 function sandbaai_crime_tracker_activate() {
     sandbaai_crime_tracker_create_tables();
@@ -46,6 +48,7 @@ function sandbaai_crime_tracker_create_tables() {
             category VARCHAR(100) NOT NULL,
             date_time DATETIME NOT NULL,
             location VARCHAR(255) NOT NULL,
+            reporter VARCHAR(255),
             result_status VARCHAR(50) NOT NULL,
             security_group_id BIGINT(20) UNSIGNED,
             photo_url VARCHAR(2083),
@@ -127,8 +130,28 @@ function sandbaai_crime_tracker_add_admin_menu() {
         'Manage Crime Reports',
         'Manage Crime Reports',
         'manage_options',
-        'sandbaai-crime-tracker-crime-reports',
-        'sandbaai_crime_tracker_crime_reports_page'
+        'sandbaai-crime-reports',
+        'sandbaai_manage_crime_reports_page'
+    );
+
+    // Submenu for "Manage Security Groups"
+    add_submenu_page(
+        'sandbaai-crime-tracker',
+        'Manage Security Groups',
+        'Manage Security Groups',
+        'manage_options',
+        'sandbaai-security-groups',
+        'sandbaai_manage_security_groups_page'
+    );
+
+    // Submenu for "Crime Statistics"
+    add_submenu_page(
+        'sandbaai-crime-tracker',
+        'Crime Statistics',
+        'Crime Statistics',
+        'manage_options',
+        'sandbaai-crime-statistics',
+        'sandbaai_crime_statistics_page'
     );
 
     // Submenu for "Settings"
@@ -137,7 +160,7 @@ function sandbaai_crime_tracker_add_admin_menu() {
         'Settings',
         'Settings',
         'manage_options',
-        'sandbaai-crime-tracker-settings',
+        'sandbaai-settings',
         'sandbaai_crime_tracker_settings_page'
     );
 }
@@ -147,12 +170,8 @@ function sandbaai_crime_tracker_dashboard_page() {
     echo '<div class="wrap"><h1>Sandbaai Crime Tracker Dashboard</h1><p>Welcome to the Sandbaai Crime Tracker plugin. Use the submenus to manage reports, security groups, and view statistics.</p></div>';
 }
 
-function sandbaai_crime_tracker_crime_reports_page() {
-    echo '<div class="wrap"><h1>Manage Crime Reports</h1><p>Here you can manage all crime reports.</p></div>';
-}
-
-function sandbaai_crime_tracker_security_groups_page() {
-    echo '<div class="wrap"><h1>Manage Security Groups</h1><p>Here you can manage all security groups.</p></div>';
+function sandbaai_crime_tracker_settings_page() {
+    echo '<div class="wrap"><h1>Settings</h1><p>Configure the plugin settings here.</p></div>';
 }
 
 // Callback for "Crime Statistics" submenu
@@ -164,12 +183,5 @@ function sandbaai_crime_statistics_page() {
     $statistics_dashboard->render_statistics_page();
 }
 
-function sandbaai_crime_tracker_settings_page() {
-    echo '<div class="wrap"><h1>Settings</h1><p>Configure the plugin settings here.</p></div>';
-}
-<<<<<<< HEAD
-
 // Initialize the Crime Reporting Form
 new Sandbaai_Crime_Reporting_Form();
-=======
->>>>>>> 85922b066834d06060e1d3ced422c84a0b30b700
