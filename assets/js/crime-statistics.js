@@ -125,8 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         beginAtZero: true,
                     },
                 },
-            },
-        });
+            });
+        }
     }
 
     // Fetch and display statistics on page load
