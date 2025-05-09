@@ -95,22 +95,24 @@ function sandbaai_crime_tracker_register_custom_types() {
         'taxonomies' => ['post_tag']
     ]);
 
-    // Register "Crime Categories" taxonomy
-    register_taxonomy('crime_category', 'crime_report', [
+    // Register "Security Groups" post type
+    register_post_type('security_group', [
         'labels' => [
-            'name' => 'Crime Categories',
-            'singular_name' => 'Crime Category',
-            'search_items' => 'Search Crime Categories',
-            'all_items' => 'All Crime Categories',
-            'edit_item' => 'Edit Crime Category',
-            'update_item' => 'Update Crime Category',
-            'add_new_item' => 'Add New Crime Category',
-            'new_item_name' => 'New Crime Category Name',
-            'menu_name' => 'Crime Categories',
+            'name' => 'Security Groups',
+            'singular_name' => 'Security Group',
+            'add_new' => 'Add New Group',
+            'add_new_item' => 'Add New Security Group',
+            'edit_item' => 'Edit Security Group',
+            'new_item' => 'New Security Group',
+            'view_item' => 'View Security Group',
+            'search_items' => 'Search Security Groups',
+            'not_found' => 'No security groups found',
+            'not_found_in_trash' => 'No security groups found in trash',
+            'all_items' => 'All Security Groups',
         ],
-        'hierarchical' => true,
+        'public' => true, // Make post type accessible in WP's admin interface
         'show_ui' => true,
-        'show_admin_column' => true,
+        'supports' => ['title', 'editor', 'custom-fields'],
     ]);
 }
 
