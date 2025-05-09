@@ -88,8 +88,9 @@ function sandbaai_crime_tracker_register_custom_types() {
             'not_found_in_trash' => 'No crime reports found in trash',
             'all_items' => 'All Crime Reports',
         ],
-        'public' => false,
+        'public' => true,
         'show_ui' => true,
+        'show_in_menu' => false, // Hide from top-level menu
         'supports' => ['title', 'editor', 'custom-fields', 'excerpt', 'thumbnail'],
         'capability_type' => 'post',
         'taxonomies' => ['post_tag']
@@ -110,8 +111,9 @@ function sandbaai_crime_tracker_register_custom_types() {
             'not_found_in_trash' => 'No security groups found in trash',
             'all_items' => 'All Security Groups',
         ],
-        'public' => true, // Make post type accessible in WP's admin interface
+        'public' => true,
         'show_ui' => true,
+        'show_in_menu' => false, // Hide from top-level menu
         'supports' => ['title', 'editor', 'custom-fields'],
     ]);
 }
