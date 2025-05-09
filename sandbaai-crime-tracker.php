@@ -20,6 +20,8 @@ register_deactivation_hook(__FILE__, 'sandbaai_crime_tracker_deactivate');
 
 // Include necessary files
 require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-crime-statistics-dashboard.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-sandbaai-crime-reporting-form.php';
+
 
 function sandbaai_crime_tracker_activate() {
     sandbaai_crime_tracker_create_tables();
@@ -217,3 +219,37 @@ function populate_crime_report_columns($column, $post_id) {
         echo $date ? esc_html($date) : '—';
     }
 }
+
+// Enqueue scripts and styles
+add_action('admin_enqueue_scripts', 'sandbaai_crime_tracker_enqueue_scripts');
+function sandbaai_crime_tracker_enqueue_scripts($hook) {
+    // Only load on the Crime Statistics page
+    if ($hook !== 'crime-tracker_page_sandbaai-crime-statistics') {
+        return;
+    }
+
+    // Enqueue Chart.js library
+    wp_enqueue_script(
+        'chart-js',
+        'https://cdn.jsdelivr.net/npm/chart.js',
+        [],
+        null,
+        true
+    );
+
+    // Enqueue custom script
+    wp_enqueue_script(
+        'crime-statistics',
+        plugin_dir_url(__FILE__) . 'assets/js/crime-statistics.js',
+        ['chart-js'],
+        null,
+        true
+    );
+
+    // Pass AJAX URL and nonce to JavaScript
+    wp_localize_script('crime-statistics', 'crimeStatistics', [
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('crime_statistics_nonce'),
+    ]);
+}
+new Sandbaai_Crime_Reporting_Form();
