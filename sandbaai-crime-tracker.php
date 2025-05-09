@@ -170,3 +170,45 @@ function sandbaai_crime_statistics_page() {
     $statistics_dashboard = new Sandbaai_Crime_Statistics_Dashboard();
     $statistics_dashboard->render_statistics_page();
 }
+
+// Add custom columns for Crime Reports
+add_filter('manage_crime_report_posts_columns', 'add_crime_report_columns');
+function add_crime_report_columns($columns) {
+    $columns['category'] = 'Category';
+    $columns['tags'] = 'Tags';
+    return $columns;
+}
+
+// Populate custom columns for Crime Reports
+add_action('manage_crime_report_posts_custom_column', 'populate_crime_report_columns', 10, 2);
+function populate_crime_report_columns($column, $post_id) {
+    if ($column == 'category') {
+        $categories = get_the_terms($post_id, 'category');
+        echo $categories ? esc_html(join(', ', wp_list_pluck($categories, 'name'))) : '—';
+    }
+    if ($column == 'tags') {
+        $tags = get_the_terms($post_id, 'post_tag');
+        echo $tags ? esc_html(join(', ', wp_list_pluck($tags, 'name'))) : '—';
+    }
+}
+
+// Add custom columns for Security Groups
+add_filter('manage_security_group_posts_columns', 'add_security_group_columns');
+function add_security_group_columns($columns) {
+    $columns['category'] = 'Category';
+    $columns['tags'] = 'Tags';
+    return $columns;
+}
+
+// Populate custom columns for Security Groups
+add_action('manage_security_group_posts_custom_column', 'populate_security_group_columns', 10, 2);
+function populate_security_group_columns($column, $post_id) {
+    if ($column == 'category') {
+        $categories = get_the_terms($post_id, 'category');
+        echo $categories ? esc_html(join(', ', wp_list_pluck($categories, 'name'))) : '—';
+    }
+    if ($column == 'tags') {
+        $tags = get_the_terms($post_id, 'post_tag');
+        echo $tags ? esc_html(join(', ', wp_list_pluck($tags, 'name'))) : '—';
+    }
+}
