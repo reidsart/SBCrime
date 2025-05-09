@@ -93,7 +93,7 @@ function sandbaai_crime_tracker_register_custom_types() {
         'show_in_menu' => false, // Hide from top-level menu
         'supports' => ['title', 'editor', 'custom-fields', 'excerpt', 'thumbnail'],
         'capability_type' => 'post',
-        'taxonomies' => ['post_tag']
+        'taxonomies' => ['crime_category', 'post_tag'] // Link taxonomy
     ]);
 
     // Register "Security Groups" post type
@@ -115,6 +115,24 @@ function sandbaai_crime_tracker_register_custom_types() {
         'show_ui' => true,
         'show_in_menu' => false, // Hide from top-level menu
         'supports' => ['title', 'editor', 'custom-fields'],
+    ]);
+
+    // Register "Crime Categories" taxonomy
+    register_taxonomy('crime_category', ['crime_report'], [
+        'labels' => [
+            'name' => 'Crime Categories',
+            'singular_name' => 'Crime Category',
+            'search_items' => 'Search Crime Categories',
+            'all_items' => 'All Crime Categories',
+            'edit_item' => 'Edit Crime Category',
+            'update_item' => 'Update Crime Category',
+            'add_new_item' => 'Add New Crime Category',
+            'new_item_name' => 'New Crime Category Name',
+            'menu_name' => 'Crime Categories',
+        ],
+        'hierarchical' => true,
+        'show_ui' => true,
+        'show_admin_column' => true,
     ]);
 }
 
