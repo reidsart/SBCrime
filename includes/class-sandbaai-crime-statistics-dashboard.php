@@ -5,39 +5,80 @@
 
 class Sandbaai_Crime_Statistics_Dashboard {
     public function render_statistics_page() {
-        global $wpdb;
-        $crime_reports_table = $wpdb->prefix . 'crime_reports';
-
-        // Debugging: Check if the table exists
-        error_log("Checking if table $crime_reports_table exists...");
-        if ($wpdb->get_var("SHOW TABLES LIKE '$crime_reports_table'") != $crime_reports_table) {
-            error_log("Error: Table $crime_reports_table does not exist.");
-            echo '<div class="wrap"><h1>Crime Statistics Dashboard</h1><p>Error: The crime reports table does not exist.</p></div>';
-            return;
-        }
-
-        // Fetch crime statistics
-        error_log("Fetching crime statistics from $crime_reports_table...");
-        $reports = $wpdb->get_results("SELECT category, COUNT(*) as count FROM $crime_reports_table GROUP BY category");
-
-        // Debugging: Check if the query returned any results
-        if ($wpdb->last_error) {
-            error_log("Database Error: " . $wpdb->last_error);
-            echo '<div class="wrap"><h1>Crime Statistics Dashboard</h1><p>Error: ' . esc_html($wpdb->last_error) . '</p></div>';
-            return;
-        }
-
-        error_log("Fetched " . count($reports) . " category statistics from $crime_reports_table.");
-        echo '<div class="wrap"><h1>Crime Statistics Dashboard</h1>';
-        if (empty($reports)) {
-            echo '<p>No crime statistics available.</p></div>';
-            return;
-        }
-
-        echo '<table class="widefat"><thead><tr><th>Category</th><th>Count</th></tr></thead><tbody>';
-        foreach ($reports as $report) {
-            echo '<tr><td>' . esc_html($report->category) . '</td><td>' . esc_html($report->count) . '</td></tr>';
-        }
-        echo '</tbody></table></div>';
+        ?>
+        <div class="wrap">
+            <h1>Crime Statistics</h1>
+            
+            <!-- Filter Section -->
+            <div id="crime-stats-filters" style="margin-bottom: 20px;">
+                <h2>Filters</h2>
+                <form method="GET">
+                    <label for="month">Month:</label>
+                    <select id="month" name="month">
+                        <option value="">All</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <!-- Add other months -->
+                    </select>
+                    
+                    <label for="year">Year:</label>
+                    <select id="year" name="year">
+                        <option value="">All</option>
+                        <?php for ($i = 2020; $i <= date('Y'); $i++): ?>
+                            <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                        <?php endfor; ?>
+                    </select>
+                    
+                    <label for="crime-type">Crime Type:</label>
+                    <select id="crime-type" name="crime_type">
+                        <option value="">All</option>
+                        <option value="theft">Theft</option>
+                        <option value="assault">Assault</option>
+                        <!-- Add other crime types -->
+                    </select>
+                    
+                    <label for="response-result">Response Result:</label>
+                    <select id="response-result" name="response_result">
+                        <option value="">All</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="unresolved">Unresolved</option>
+                        <!-- Add other response results -->
+                    </select>
+                    
+                    <label for="time-range">Time Range:</label>
+                    <input type="time" id="time-range-start" name="time_range_start">
+                    to
+                    <input type="time" id="time-range-end" name="time_range_end">
+                    
+                    <button type="submit">Apply Filters</button>
+                </form>
+            </div>
+            
+            <!-- Data Visualization Section -->
+            <div id="crime-stats-visualizations">
+                <h2>Data Visualizations</h2>
+                <div id="crimes-by-day-graph" style="margin-bottom: 20px;">
+                    <h3>Crimes by Day</h3>
+                    <p>Graph placeholder</p>
+                </div>
+                
+                <div id="crime-categories-pie-chart" style="margin-bottom: 20px;">
+                    <h3>Crime Categories</h3>
+                    <p>Pie chart placeholder</p>
+                </div>
+                
+                <div id="crime-locations-map" style="margin-bottom: 20px;">
+                    <h3>Crime Locations</h3>
+                    <p>Interactive map placeholder</p>
+                </div>
+            </div>
+            
+            <!-- List View Section -->
+            <div id="crime-stats-list-view">
+                <h2>Crime List View</h2>
+                <p>List view placeholder with color coding for crime categories.</p>
+            </div>
+        </div>
+        <?php
     }
 }
